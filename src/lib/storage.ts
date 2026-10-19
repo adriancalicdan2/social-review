@@ -12,7 +12,7 @@ import {
   where,
 } from "firebase/firestore";
 
-const STORAGE_KEY = "tmaker_profiles_v1";
+const STORAGE_KEY = "tmaker_profiles_v2";
 
 // Reserved URLs that can never be claimed as a profile slug
 export const RESERVED_SLUGS = [
@@ -41,13 +41,26 @@ function getLocalProfiles(): Profile[] {
     return inMemoryProfiles;
   }
   try {
+    // Purge old v1 cache to prevent stale slugs
+    localStorage.removeItem("tmaker_profiles_v1");
+
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_PROFILES));
       return DEFAULT_PROFILES;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_PROFILES;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      // Ensure aura is available if an old list was stored
+      const hasAura = parsed.some((p) => p.slug === "aura");
+      if (!hasAura) {
+        const merged = [...DEFAULT_PROFILES, ...parsed.filter((p) => p.slug !== "kaia")];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        return merged;
+      }
+      return parsed;
+    }
+    return DEFAULT_PROFILES;
   } catch (err) {
     console.error("Error reading localStorage profiles:", err);
     return DEFAULT_PROFILES;
@@ -73,28 +86,31 @@ export async function getProfiles(): Promise<Profile[]> {
       snap.forEach((d) => list.push(d.data() as Profile));
       if (list.length > 0) return list;
     } catch (err) {
-      console.warn("Firestore getProfiles failed, falling back to local:", err);
+      console.warn("Firestore getProfiles note, using local/defaults:", err);
     }
   }
   return getLocalProfiles();
 }
 
 export async function getProfileById(id: string): Promise<Profile | null> {
+  const defaultMatch = DEFAULT_PROFILES.find((p) => p.id === id);
   if (isFirebaseConfigured && db) {
     try {
       const docRef = doc(db, "profiles", id);
       const snap = await getDoc(docRef);
       if (snap.exists()) return snap.data() as Profile;
     } catch (err) {
-      console.warn("Firestore getProfileById failed, checking local:", err);
+      console.warn("Firestore getProfileById note, using local/defaults:", err);
     }
   }
   const profiles = getLocalProfiles();
-  return profiles.find((p) => p.id === id) || null;
+  return profiles.find((p) => p.id === id) || defaultMatch || null;
 }
 
 export async function getProfileBySlug(slug: string): Promise<Profile | null> {
   const cleanSlug = slug.toLowerCase().trim();
+  const defaultMatch = DEFAULT_PROFILES.find((p) => p.slug.toLowerCase() === cleanSlug);
+
   if (isFirebaseConfigured && db) {
     try {
       const q = query(collection(db, "profiles"), where("slug", "==", cleanSlug));
@@ -103,11 +119,12 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
         return snap.docs[0].data() as Profile;
       }
     } catch (err) {
-      console.warn("Firestore getProfileBySlug failed, checking local:", err);
+      console.warn("Firestore getProfileBySlug note, using local/defaults:", err);
     }
   }
   const profiles = getLocalProfiles();
-  return profiles.find((p) => p.slug.toLowerCase() === cleanSlug) || null;
+  const found = profiles.find((p) => p.slug.toLowerCase() === cleanSlug);
+  return found || defaultMatch || null;
 }
 
 export async function isSlugAvailable(

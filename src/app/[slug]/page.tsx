@@ -8,34 +8,42 @@ import { ProfileRenderer } from "@/components/templates/ProfileRenderer";
 import { Lock, AlertCircle, ArrowLeft, Smartphone } from "lucide-react";
 import Link from "next/link";
 
+import { DEFAULT_PROFILES } from "@/lib/defaultProfiles";
+
 export default function PublicProfilePage() {
   const params = useParams();
   const slug = (params.slug as string)?.toLowerCase().trim();
+  const targetSlug = slug === "kaia" ? "aura" : slug;
 
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const initialProfile =
+    DEFAULT_PROFILES.find((p) => p.slug.toLowerCase() === targetSlug) || null;
+
+  const [profile, setProfile] = useState<Profile | null>(initialProfile);
+  const [loading, setLoading] = useState(!initialProfile);
   const [notFoundState, setNotFoundState] = useState(false);
 
   useEffect(() => {
-    if (!slug || RESERVED_SLUGS.includes(slug)) {
+    if (!targetSlug || RESERVED_SLUGS.includes(targetSlug)) {
       setNotFoundState(true);
       setLoading(false);
       return;
     }
 
     async function load() {
-      const data = await getProfileBySlug(slug);
+      const data = await getProfileBySlug(targetSlug);
       if (!data) {
-        setNotFoundState(true);
+        if (!initialProfile) {
+          setNotFoundState(true);
+        }
       } else {
         setProfile(data);
-        // Set dynamic document title and favicon
+        setNotFoundState(false);
         document.title = `${data.name} — Official Links`;
       }
       setLoading(false);
     }
     load();
-  }, [slug]);
+  }, [targetSlug, initialProfile]);
 
   if (loading) {
     return (

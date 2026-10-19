@@ -98,7 +98,7 @@ export default function EditorPage() {
   const templates: { id: TemplateId; name: string; desc: string }[] = [
     {
       id: "cyber-glow",
-      name: "Cyber Glow / KAIA Style",
+      name: "Cyber Glow / Neon Studio",
       desc: "Futuristic dark vibe with glowing meshes, ambient pulses & ripple badges.",
     },
     {

@@ -12,7 +12,7 @@ export default function NewProfilePage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [templateId, setTemplateId] = useState<TemplateId>("cyber-glow");
-  const [selectedPaletteId, setSelectedPaletteId] = useState("kaia-cyber");
+  const [selectedPaletteId, setSelectedPaletteId] = useState("cyber-neon");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -205,7 +205,7 @@ export default function NewProfilePage() {
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               {[
-                { id: "cyber-glow", name: "Cyber Glow (KAIA)", desc: "Ambient glow & dark aesthetic" },
+                { id: "cyber-glow", name: "Cyber Glow Studio", desc: "Ambient glow & dark aesthetic" },
                 { id: "modern-bio", name: "Modern Bio", desc: "Clean & social-first" },
                 { id: "executive-card", name: "Executive Card", desc: "vCard & corporate layout" },
               ].map((t) => (

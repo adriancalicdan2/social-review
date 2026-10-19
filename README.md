@@ -7,14 +7,14 @@
 
 ## 🌟 Key Features
 
-1. **Faithful KAIA Template Preservation & Multi-Layout System**:
-   - **Cyber Glow / KAIA Style**: Preserves 100% of the signature P-pop aesthetic (dynamic radial glow mesh, pulsing avatar glow rings, full-color SVG platform icons, ripple clicks, and mobile intent deep links).
+1. **Multi-Layout Profile System**:
+   - **Cyber Glow / Neon Studio**: Ambient radial glow mesh, pulsing avatar glow rings, full-color SVG platform icons, ripple clicks, and mobile intent deep links.
    - **Modern Link-in-Bio**: Clean, minimalist, social-first presentation for creators and modern agencies.
    - **Executive Digital Business Pass**: Professional card layout with **1-Tap vCard Download** directly importing contacts to iOS / Android address books.
 
 2. **Brand Theme & Multi-Color Combination Studio**:
    - **Interactive Hex/RGB/Eyedropper Pickers** for Primary Brand, Secondary Accent, Background, and Text colors.
-   - **9 Curated Brand Palettes** (Corporate Navy, Cyber KAIA, Luxury Gold, Modern Clean White, Eco Forest, Artisan Warmth, Fintech Space, Rose Velvet, Crimson Pulse).
+   - **9 Curated Brand Palettes** (Corporate Navy, Cyber Neon, Luxury Gold, Modern Clean White, Eco Forest, Artisan Warmth, Fintech Space, Rose Velvet, Crimson Pulse).
    - **WCAG 2.1 Contrast Checker** for high legibility on mobile screens.
    - Dynamic CSS variable injection for real-time live preview with zero page reloads.
 
@@ -24,7 +24,7 @@
    - Instant reordering, categorization, and badges (e.g. `★ LATEST MUSIC`).
 
 4. **Public NFC Profile Engine (`/:slug`)**:
-   - Dynamic URLs: `tmaker.com/kaia`, `tmaker.com/companyname`, `tmaker.com/juan`.
+   - Dynamic URLs: `tmaker.com/companyname`, `tmaker.com/juan`, `tmaker.com/aura`.
    - Reserved route protection: `/dashboard`, `/editor`, `/login`, `/api` are strictly protected.
    - Draft and unpublished status guards.
    - High-performance, mobile-first design optimized for NFC smartphone taps.
@@ -60,7 +60,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000) in your browser:
 - **Homepage**: [http://localhost:3000](http://localhost:3000)
 - **Admin Dashboard**: [http://localhost:3000/dashboard](http://localhost:3000/dashboard)
-- **KAIA Profile Demo**: [http://localhost:3000/kaia](http://localhost:3000/kaia)
+- **Cyber Glow Profile Demo**: [http://localhost:3000/aura](http://localhost:3000/aura)
 - **Executive Card Demo**: [http://localhost:3000/juan](http://localhost:3000/juan)
 - **Modern Bio Demo**: [http://localhost:3000/acme](http://localhost:3000/acme)
 - **Admin Login**: [http://localhost:3000/login](http://localhost:3000/login) (Credentials: `admin@tmaker.com` / `adminpassword123`)
@@ -97,7 +97,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
 ## 📲 How to Write Published URLs to Physical NFC Cards
 
 1. Open TMaker Admin Dashboard and click **Publish** on the client profile.
-2. Click **QR & NFC** to copy the public URL (e.g. `https://tmaker.com/kaia`).
+2. Click **QR & NFC** to copy the public URL (e.g. `https://tmaker.com/companyname`).
 3. Download the free **NFC Tools** app on your iPhone or Android.
 4. In NFC Tools:
    - Select **Write**

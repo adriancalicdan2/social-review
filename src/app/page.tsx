@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 export default function HomePage() {
-  const [selectedDemo, setSelectedDemo] = useState<"kaia" | "juan" | "acme">("kaia");
+  const [selectedDemo, setSelectedDemo] = useState<"aura" | "juan" | "acme">("aura");
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-purple-600 selection:text-white">
@@ -104,11 +104,11 @@ export default function HomePage() {
             </Link>
 
             <Link
-              href="/kaia"
+              href="/aura"
               className="px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-sm font-bold flex items-center justify-center gap-2 transition-colors"
             >
               <Sparkles className="w-4 h-4 text-purple-400" />
-              <span>View KAIA Live Demo</span>
+              <span>View Cyber Glow Demo</span>
             </Link>
           </div>
 
@@ -139,8 +139,8 @@ export default function HomePage() {
 
             {/* Embedded Live Demo Iframe / Preview */}
             <iframe
-              src="/kaia"
-              title="KAIA Profile Live Demo"
+              src="/aura"
+              title="Profile Live Demo"
               className="w-full flex-1 border-0 rounded-b-[36px]"
             />
 
@@ -231,14 +231,14 @@ export default function HomePage() {
           {/* Preset Buttons */}
           <div className="flex items-center gap-2 mt-6 p-1 rounded-2xl bg-slate-900 border border-slate-800">
             <button
-              onClick={() => setSelectedDemo("kaia")}
+              onClick={() => setSelectedDemo("aura")}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                selectedDemo === "kaia"
+                selectedDemo === "aura"
                   ? "bg-purple-600 text-white shadow-md"
                   : "text-slate-400 hover:text-white"
               }`}
             >
-              Cyber Glow (KAIA)
+              Cyber Glow (Aura)
             </button>
             <button
               onClick={() => setSelectedDemo("juan")}
@@ -387,7 +387,7 @@ export default function HomePage() {
           <Link href="/login" className="hover:text-slate-300">
             Admin Login
           </Link>
-          <Link href="/kaia" className="hover:text-slate-300">
+          <Link href="/aura" className="hover:text-slate-300">
             Demo Profile
           </Link>
         </div>

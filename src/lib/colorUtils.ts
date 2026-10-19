@@ -2,8 +2,8 @@ import { ColorPalette, ThemeSettings } from "./types";
 
 export const BRAND_PALETTES: ColorPalette[] = [
   {
-    id: "kaia-cyber",
-    name: "Cyber Pop / KAIA",
+    id: "cyber-neon",
+    name: "Cyber Pop / Neon Glow",
     category: "Entertainment & Music",
     bgPrimary: "#0a0814",
     bgSecondary: "#131024",

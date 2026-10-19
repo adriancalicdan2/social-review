@@ -59,7 +59,7 @@ export const ProfileInfoPanel: React.FC<ProfileInfoPanelProps> = ({ profile, onC
             type="text"
             value={profile.name}
             onChange={(e) => updateField("name", e.target.value)}
-            placeholder="e.g. KAIA or Juan Dela Cruz"
+            placeholder="e.g. Acme Studio or Juan Dela Cruz"
             className="w-full text-sm bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
           />
         </div>
@@ -112,7 +112,7 @@ export const ProfileInfoPanel: React.FC<ProfileInfoPanelProps> = ({ profile, onC
               type="button"
               onClick={() => updateField("avatarUrl", "/image.png")}
               className="px-2.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl border border-slate-700 whitespace-nowrap"
-              title="Reset to KAIA original photo"
+              title="Reset to default photo"
             >
               Default
             </button>

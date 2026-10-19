@@ -7,7 +7,7 @@
 
 **TMaker** is a production-grade Software-as-a-Service (SaaS) platform tailored for an NFC digital business card & smart profile business. As the administrator and service provider, you can create, customize, preview, manage, and publish high-performance, mobile-first digital profile pages for clients across various verticals (creators, musicians, enterprises, executives, and influencers).
 
-Each customer profile is linked to a clean, unique URL (e.g. `tmaker.com/kaia`, `tmaker.com/companyname`, `tmaker.com/juan`), which is programmed onto physical NFC cards or smart tags. Tapping the NFC card with any smartphone immediately opens the customer's digital hub.
+Each customer profile is linked to a clean, unique URL (e.g. `tmaker.com/companyname`, `tmaker.com/juan`, `tmaker.com/aura`), which is programmed onto physical NFC cards or smart tags. Tapping the NFC card with any smartphone immediately opens the customer's digital hub.
 
 ---
 

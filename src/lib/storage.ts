@@ -12,7 +12,7 @@ import {
   where,
 } from "firebase/firestore";
 
-const STORAGE_KEY = "tmaker_profiles_v2";
+const STORAGE_KEY = "tmaker_profiles_v3";
 
 // Reserved URLs that can never be claimed as a profile slug
 export const RESERVED_SLUGS = [
@@ -41,8 +41,9 @@ function getLocalProfiles(): Profile[] {
     return inMemoryProfiles;
   }
   try {
-    // Purge old v1 cache to prevent stale slugs
+    // Purge older caches to ensure updated avatars and configurations
     localStorage.removeItem("tmaker_profiles_v1");
+    localStorage.removeItem("tmaker_profiles_v2");
 
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -51,14 +52,15 @@ function getLocalProfiles(): Profile[] {
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Ensure aura is available if an old list was stored
-      const hasAura = parsed.some((p) => p.slug === "aura");
-      if (!hasAura) {
-        const merged = [...DEFAULT_PROFILES, ...parsed.filter((p) => p.slug !== "kaia")];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-        return merged;
-      }
-      return parsed;
+      // Ensure updated aura logo is applied
+      const updated = parsed.map((p) => {
+        if (p.slug === "aura" && p.avatarUrl === "/image.png") {
+          return { ...p, avatarUrl: "/aura-logo.svg" };
+        }
+        return p;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
     }
     return DEFAULT_PROFILES;
   } catch (err) {

@@ -71,7 +71,7 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ profile, isOpen, onClo
               level="H"
               includeMargin={true}
               imageSettings={{
-                src: profile.avatarUrl || "/image.png",
+                src: profile.avatarUrl || "/aura-logo.svg",
                 x: undefined,
                 y: undefined,
                 height: 44,

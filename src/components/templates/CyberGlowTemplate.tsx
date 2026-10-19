@@ -116,12 +116,12 @@ export const CyberGlowTemplate: React.FC<TemplateProps> = ({ profile, isPreview 
             />
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={profile.avatarUrl || "/image.png"}
+              src={profile.avatarUrl || "/aura-logo.svg"}
               alt={profile.name}
               className={`relative z-10 w-28 h-28 ${getAvatarRadius()} object-cover border-[3.5px] border-[#0d0b18] shadow-xl transition-transform duration-300 group-hover:scale-105`}
               onError={(e) => {
                 // Fallback to placeholder if url fails
-                (e.target as HTMLImageElement).src = "/image.png";
+                (e.target as HTMLImageElement).src = "/aura-logo.svg";
               }}
             />
           </div>
@@ -287,7 +287,7 @@ export const CyberGlowTemplate: React.FC<TemplateProps> = ({ profile, isPreview 
 
       {/* Fullscreen Lightbox Modal */}
       <Lightbox
-        src={profile.avatarUrl || "/image.png"}
+        src={profile.avatarUrl || "/aura-logo.svg"}
         alt={profile.name}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}

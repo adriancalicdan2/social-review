@@ -231,11 +231,11 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-3">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={item.avatarUrl || "/image.png"}
+                        src={item.avatarUrl || "/aura-logo.svg"}
                         alt={item.name}
                         className="w-12 h-12 rounded-2xl object-cover border border-slate-700 bg-slate-950"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/image.png";
+                          (e.target as HTMLImageElement).src = "/aura-logo.svg";
                         }}
                       />
                       <div className="min-w-0">

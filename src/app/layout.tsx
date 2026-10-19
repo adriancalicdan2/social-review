@@ -6,13 +6,13 @@ export const metadata: Metadata = {
   title: "TMaker — NFC Digital Profile Template Maker",
   description: "One Tap. Your Entire Digital Presence. Create, brand, and publish responsive digital profile pages linked to physical NFC business cards.",
   icons: {
-    icon: "/image.png",
-    apple: "/image.png",
+    icon: "/aura-logo.svg",
+    apple: "/aura-logo.svg",
   },
   openGraph: {
     title: "TMaker — NFC Digital Profile Studio",
     description: "One Tap. Your Entire Digital Presence. Create, brand, and publish responsive digital profile pages.",
-    images: ["/image.png"],
+    images: ["/aura-logo.svg"],
     type: "website",
   },
 };

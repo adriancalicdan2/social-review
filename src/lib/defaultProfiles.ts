@@ -7,7 +7,7 @@ export const DEFAULT_PROFILES: Profile[] = [
     name: "Aura Official",
     subtitle: "Electronic Music & Visual Art Collective",
     bio: "Official digital hub for music releases, tour updates, visual art projects, and exclusive community links.",
-    avatarUrl: "/image.png",
+    avatarUrl: "/aura-logo.svg",
     templateId: "cyber-glow",
     status: "published",
     verified: true,

@@ -107,9 +107,18 @@ export default function HomePage() {
 
         {/* Left Hero Copy */}
         <div className="flex-1 flex flex-col items-start text-left z-10">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-300 text-xs font-bold mb-6">
-            <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-            <span>Smart Contactless Profile System</span>
+          <div className="flex flex-wrap items-center gap-2.5 mb-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-purple-950/60 border border-purple-500/30 text-purple-300 text-xs font-bold">
+              <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+              <span>Smart Contactless Profile System</span>
+            </div>
+            <Link
+              href={user ? "/editor/new" : "/login?redirect=/editor/new"}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-purple-600/10 hover:bg-purple-600/20 border border-purple-500/30 text-purple-300 text-xs font-bold transition-colors"
+            >
+              <Sparkles className="w-3 h-3 text-purple-400" />
+              <span>Sign Up or Sign In to create your profile</span>
+            </Link>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
@@ -140,6 +149,13 @@ export default function HomePage() {
               <span>View Cyber Glow Demo</span>
             </Link>
           </div>
+
+          {!user && (
+            <p className="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+              <span>Sign Up or Sign In to create and customize your profile</span>
+            </p>
+          )}
 
           {/* Social Proof Stats */}
           <div className="grid grid-cols-3 gap-6 pt-10 mt-10 border-t border-slate-800/80 w-full max-w-md text-left">

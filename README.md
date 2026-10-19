@@ -63,7 +63,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser:
 - **Cyber Glow Profile Demo**: [http://localhost:3000/aura](http://localhost:3000/aura)
 - **Executive Card Demo**: [http://localhost:3000/juan](http://localhost:3000/juan)
 - **Modern Bio Demo**: [http://localhost:3000/acme](http://localhost:3000/acme)
-- **Admin Login**: [http://localhost:3000/login](http://localhost:3000/login) (Credentials: `admin@tmaker.com` / `adminpassword123`)
+- **Admin Login**: [http://localhost:3000/login](http://localhost:3000/login) (Credentials: `adriancalicdan2@gmail.com` / `Mojijo19`)
 
 ---
 
@@ -80,8 +80,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_NAME="TMaker — NFC Digital Profile Studio"
 
 # Admin Authentication
-ADMIN_EMAIL=admin@tmaker.com
-ADMIN_PASSWORD=adminpassword123
+ADMIN_EMAIL=adriancalicdan2@gmail.com
+ADMIN_PASSWORD=Mojijo19
 
 # Firebase Configuration (Optional in local development; falls back to embedded LocalStorage engine)
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key

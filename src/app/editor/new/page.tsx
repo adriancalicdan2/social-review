@@ -113,6 +113,7 @@ export default function NewProfilePage() {
           ],
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          userId: user?.uid,
         };
 
         const saved = await saveProfile(newProfile);
@@ -143,18 +144,18 @@ export default function NewProfilePage() {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto mb-4">
+          <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-purple-400 flex items-center justify-center mx-auto mb-4">
             <Lock className="w-6 h-6" />
           </div>
-          <h2 className="text-xl font-bold text-white">Login Required</h2>
-          <p className="text-xs text-slate-400 mt-2">
-            Hindi pwede mag-create ng profile template kung hindi naka-login. Mangyaring mag-sign in o mag-sign up muna.
+          <h2 className="text-xl font-bold text-white">Sign Up or Sign In to create your profile</h2>
+          <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+            Kailangan mag-sign in o mag-sign up muna bago makapag-create at makapag-customize ng iyong official NFC digital profile template.
           </p>
           <Link
             href="/login?redirect=/editor/new"
-            className="mt-6 w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30"
+            className="mt-6 w-full py-3.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30 active:scale-95 transition-all"
           >
-            <span>Sign In / Sign Up</span>
+            <span>Sign Up or Sign In Now</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

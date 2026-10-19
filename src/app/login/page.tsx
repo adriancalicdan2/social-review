@@ -6,17 +6,29 @@ import { useAuth } from "@/context/AuthContext";
 import { Lock, Mail, Key, ArrowRight, ShieldCheck, UserPlus, LogIn, AlertCircle, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
+function GoogleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 001 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+  );
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "/dashboard";
 
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn, signUp, signInWithGoogle } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -75,10 +87,27 @@ function LoginForm() {
     }
   };
 
-  const handleDemoFill = () => {
-    setEmail("admin@tmaker.com");
-    setPassword("adminpassword123");
-    setConfirmPassword("adminpassword123");
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    setError(null);
+    setSuccessMsg(null);
+
+    try {
+      await signInWithGoogle();
+      setSuccessMsg("Signed in with Google! Redirecting...");
+      setTimeout(() => {
+        router.push(redirectUrl);
+      }, 700);
+    } catch (err: any) {
+      console.error("Google sign-in error:", err);
+      if (err.code === "auth/popup-closed-by-user") {
+        // User closed the popup, no error needed
+        setGoogleLoading(false);
+        return;
+      }
+      setError(err.message || "Google sign-in failed. Please try again.");
+      setGoogleLoading(false);
+    }
   };
 
   return (
@@ -94,14 +123,41 @@ function LoginForm() {
               TMaker<span className="text-purple-400">.</span>
             </span>
           </Link>
+
+          {/* Prominent Callout Banner */}
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[11px] font-bold mb-3 shadow-sm">
+            <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+            <span>Sign Up or Sign In to create your profile</span>
+          </div>
+
           <h1 className="text-xl font-extrabold text-white">
-            {mode === "signin" ? "Sign In to Your Studio" : "Create Studio Account"}
+            {mode === "signin" ? "Sign In to Your Studio" : "Create Your Studio Account"}
           </h1>
           <p className="text-xs text-slate-400 mt-1 max-w-xs">
             {mode === "signin"
-              ? "Sign in to create, edit, and publish your custom NFC profile templates."
-              : "Sign up to start creating and managing dynamic digital profile cards."}
+              ? "Access your dashboard to customize NFC profile templates, manage client links, and edit brand themes."
+              : "Register your account to unlock the two-panel live reactive profile builder and dynamic NFC cards."}
           </p>
+        </div>
+
+        {/* Google Sign-In Button */}
+        <button
+          type="button"
+          onClick={handleGoogleSignIn}
+          disabled={googleLoading || loading}
+          className="w-full mb-4 py-3 px-4 bg-white hover:bg-gray-50 text-slate-800 text-xs font-bold rounded-xl shadow-md flex items-center justify-center gap-3 transition-all active:scale-[0.98] disabled:opacity-50 border border-gray-200"
+        >
+          <GoogleIcon className="flex-shrink-0" />
+          <span>
+            {googleLoading ? "Signing in with Google..." : "Continue with Google"}
+          </span>
+        </button>
+
+        {/* Divider */}
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px bg-slate-800" />
+          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">or use email</span>
+          <div className="flex-1 h-px bg-slate-800" />
         </div>
 
         {/* Auth Mode Switcher Tabs */}
@@ -210,7 +266,7 @@ function LoginForm() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || googleLoading}
             className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50"
           >
             <span>
@@ -225,18 +281,6 @@ function LoginForm() {
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
-
-        {/* Demo Fill Helper */}
-        <div className="mt-5 pt-4 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-          <span>Testing credentials?</span>
-          <button
-            type="button"
-            onClick={handleDemoFill}
-            className="text-purple-400 hover:text-purple-300 font-semibold underline underline-offset-2"
-          >
-            Auto-fill demo account
-          </button>
-        </div>
       </div>
     </div>
   );

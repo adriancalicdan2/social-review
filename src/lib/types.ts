@@ -124,4 +124,5 @@ export interface Profile {
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
+  userId?: string;
 }

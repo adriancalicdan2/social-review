@@ -75,9 +75,9 @@ Each customer profile is linked to a clean, unique URL (e.g. `tmaker.com/company
 | `/` | Public | Premium SaaS landing page explaining NFC profiles, features, interactive demo, and contact. |
 | `/login` | Public / Auth | Secure admin authentication portal. |
 | `/dashboard` | Protected (Admin) | Profile inventory, statistics, draft/published counts, search, and CRUD action center. |
-| `/editor/new` | Protected (Admin) | Creation wizard with template gallery and starter presets. |
+| `/editor/new` | Protected (Admin) | Direct-to-full-editor creation route (rekta sa buong profile customizer). |
 | `/editor/:id` | Protected (Admin) | Split-screen real-time visual customizer (controls on left, reactive smartphone preview on right). |
-| `/:slug` | Public | Customer digital profile loaded by slug (e.g. `/kaia`, `/acme`, `/juan`). |
+| `/:slug` | Public | Customer digital profile loaded by slug (e.g. `/aura`, `/acme`, `/juan`). |
 
 > **Reserved Slugs Protection**: Routes like `dashboard`, `editor`, `login`, `api`, `templates`, `settings`, `admin`, and `public` are strictly blacklisted from being claimed as customer profile slugs.
 

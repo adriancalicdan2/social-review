@@ -10,9 +10,10 @@ import {
   deleteDoc,
   query,
   where,
+  orderBy,
 } from "firebase/firestore";
 
-const STORAGE_KEY = "tmaker_profiles_v5";
+const STORAGE_KEY = "tmaker_profiles_v6";
 
 // Reserved URLs that can never be claimed as a profile slug
 export const RESERVED_SLUGS = [
@@ -41,11 +42,12 @@ function getLocalProfiles(): Profile[] {
     return inMemoryProfiles;
   }
   try {
-    // Purge older caches to ensure updated logos and configurations
+    // Purge older caches
     localStorage.removeItem("tmaker_profiles_v1");
     localStorage.removeItem("tmaker_profiles_v2");
     localStorage.removeItem("tmaker_profiles_v3");
     localStorage.removeItem("tmaker_profiles_v4");
+    localStorage.removeItem("tmaker_profiles_v5");
 
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -54,21 +56,7 @@ function getLocalProfiles(): Profile[] {
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Ensure official logos for Aura and Acme are applied
-      const updated = parsed.map((p) => {
-        if (p.slug === "aura" && (!p.avatarUrl || p.avatarUrl === "/image.png")) {
-          return { ...p, avatarUrl: "/aura-logo.svg" };
-        }
-        if (p.slug === "acme" && (!p.avatarUrl || p.avatarUrl === "/image.png")) {
-          return { ...p, avatarUrl: "/acme-logo.svg" };
-        }
-        if (p.avatarUrl === "/image.png") {
-          return { ...p, avatarUrl: "" };
-        }
-        return p;
-      });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
+      return parsed;
     }
     return DEFAULT_PROFILES;
   } catch (err) {
@@ -88,18 +76,64 @@ function saveLocalProfiles(profiles: Profile[]): void {
   }
 }
 
-export async function getProfiles(): Promise<Profile[]> {
+/**
+ * Get profiles from Firestore.
+ * - If isAdmin is true, returns ALL profiles across all users.
+ * - Otherwise, returns only profiles belonging to the given userId.
+ * - Falls back to localStorage if Firestore is not available.
+ */
+export async function getProfiles(userId?: string, isAdmin?: boolean): Promise<Profile[]> {
   if (isFirebaseConfigured && db) {
     try {
-      const snap = await getDocs(collection(db, "profiles"));
+      let snap;
+      if (isAdmin) {
+        // Super admin sees everything
+        snap = await getDocs(collection(db, "profiles"));
+      } else if (userId) {
+        // Regular user sees only their own profiles
+        const q = query(collection(db, "profiles"), where("userId", "==", userId));
+        snap = await getDocs(q);
+      } else {
+        snap = await getDocs(collection(db, "profiles"));
+      }
       const list: Profile[] = [];
-      snap.forEach((d) => list.push(d.data() as Profile));
-      if (list.length > 0) return list;
+      snap.forEach((d) => list.push({ ...d.data(), id: d.id } as Profile));
+      return list;
     } catch (err) {
       console.warn("Firestore getProfiles note, using local/defaults:", err);
     }
   }
   return getLocalProfiles();
+}
+
+/**
+ * Get all unique user IDs from profiles (admin only).
+ */
+export async function getAllProfileUsers(): Promise<{ userId: string; email?: string; profileCount: number }[]> {
+  if (!isFirebaseConfigured || !db) return [];
+  try {
+    const snap = await getDocs(collection(db, "profiles"));
+    const userMap = new Map<string, { count: number; email?: string }>();
+    snap.forEach((d) => {
+      const data = d.data() as Profile;
+      if (data.userId) {
+        const existing = userMap.get(data.userId);
+        if (existing) {
+          existing.count++;
+        } else {
+          userMap.set(data.userId, { count: 1 });
+        }
+      }
+    });
+    return Array.from(userMap.entries()).map(([userId, info]) => ({
+      userId,
+      email: info.email,
+      profileCount: info.count,
+    }));
+  } catch (err) {
+    console.warn("Error getting all profile users:", err);
+    return [];
+  }
 }
 
 export async function getProfileById(id: string): Promise<Profile | null> {
@@ -108,7 +142,7 @@ export async function getProfileById(id: string): Promise<Profile | null> {
     try {
       const docRef = doc(db, "profiles", id);
       const snap = await getDoc(docRef);
-      if (snap.exists()) return snap.data() as Profile;
+      if (snap.exists()) return { ...snap.data(), id: snap.id } as Profile;
     } catch (err) {
       console.warn("Firestore getProfileById note, using local/defaults:", err);
     }
@@ -126,7 +160,8 @@ export async function getProfileBySlug(slug: string): Promise<Profile | null> {
       const q = query(collection(db, "profiles"), where("slug", "==", cleanSlug));
       const snap = await getDocs(q);
       if (!snap.empty) {
-        return snap.docs[0].data() as Profile;
+        const d = snap.docs[0];
+        return { ...d.data(), id: d.id } as Profile;
       }
     } catch (err) {
       console.warn("Firestore getProfileBySlug note, using local/defaults:", err);
@@ -143,6 +178,18 @@ export async function isSlugAvailable(
 ): Promise<boolean> {
   const cleanSlug = slug.toLowerCase().trim();
   if (RESERVED_SLUGS.includes(cleanSlug)) return false;
+
+  // Check Firestore first
+  if (isFirebaseConfigured && db) {
+    try {
+      const q = query(collection(db, "profiles"), where("slug", "==", cleanSlug));
+      const snap = await getDocs(q);
+      const existing = snap.docs.find((d) => d.id !== excludeProfileId);
+      return !existing;
+    } catch (err) {
+      console.warn("Firestore isSlugAvailable note:", err);
+    }
+  }
 
   const profiles = await getProfiles();
   const existing = profiles.find(
@@ -171,6 +218,7 @@ export async function saveProfile(profile: Profile): Promise<Profile> {
     }
   }
 
+  // Also keep local copy
   const profiles = getLocalProfiles();
   const index = profiles.findIndex((p) => p.id === updated.id);
   if (index >= 0) {
@@ -197,7 +245,7 @@ export async function deleteProfile(id: string): Promise<boolean> {
   return true;
 }
 
-export async function duplicateProfile(id: string): Promise<Profile | null> {
+export async function duplicateProfile(id: string, userId?: string): Promise<Profile | null> {
   const original = await getProfileById(id);
   if (!original) return null;
 
@@ -215,6 +263,7 @@ export async function duplicateProfile(id: string): Promise<Profile | null> {
     slug: newSlug,
     name: `${original.name} (Copy)`,
     status: "draft",
+    userId: userId || original.userId,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
     publishedAt: undefined,

@@ -1,14 +1,29 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Anyone can read a published profile by slug
+
+    // Profiles collection
     match /profiles/{profileId} {
-      allow read: if resource.data.status == 'published' || request.auth != null;
-      allow write: if request.auth != null; // Only authenticated admin can create/update/delete
-      
+      // Anyone can read published profiles (for public NFC links)
+      // Authenticated users can read their own profiles
+      // Super admin (adriancalicdan2@gmail.com) can read all
+      allow read: if resource.data.status == 'published'
+                  || (request.auth != null && resource.data.userId == request.auth.uid)
+                  || (request.auth != null && request.auth.token.email == 'adriancalicdan2@gmail.com');
+
+      // Users can create profiles with their own userId
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid;
+
+      // Users can update/delete their own profiles
+      // Super admin can update/delete any profile
+      allow update, delete: if request.auth != null
+                            && (resource.data.userId == request.auth.uid
+                                || request.auth.token.email == 'adriancalicdan2@gmail.com');
+
       match /links/{linkId} {
-        allow read: if get(/databases/$(database)/documents/profiles/$(profileId)).data.status == 'published' || request.auth != null;
+        allow read: if get(/databases/$(database)/documents/profiles/$(profileId)).data.status == 'published'
+                    || request.auth != null;
         allow write: if request.auth != null;
       }
     }

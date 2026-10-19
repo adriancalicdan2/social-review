@@ -12,7 +12,7 @@ import {
   where,
 } from "firebase/firestore";
 
-const STORAGE_KEY = "tmaker_profiles_v3";
+const STORAGE_KEY = "tmaker_profiles_v4";
 
 // Reserved URLs that can never be claimed as a profile slug
 export const RESERVED_SLUGS = [
@@ -41,9 +41,10 @@ function getLocalProfiles(): Profile[] {
     return inMemoryProfiles;
   }
   try {
-    // Purge older caches to ensure updated avatars and configurations
+    // Purge older caches to ensure updated letter avatars and configurations
     localStorage.removeItem("tmaker_profiles_v1");
     localStorage.removeItem("tmaker_profiles_v2");
+    localStorage.removeItem("tmaker_profiles_v3");
 
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -52,10 +53,10 @@ function getLocalProfiles(): Profile[] {
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Ensure updated aura logo is applied
+      // Ensure letter avatars are defaulted
       const updated = parsed.map((p) => {
-        if (p.slug === "aura" && p.avatarUrl === "/image.png") {
-          return { ...p, avatarUrl: "/aura-logo.svg" };
+        if (p.avatarUrl === "/image.png" || p.avatarUrl === "/aura-logo.svg") {
+          return { ...p, avatarUrl: "" };
         }
         return p;
       });

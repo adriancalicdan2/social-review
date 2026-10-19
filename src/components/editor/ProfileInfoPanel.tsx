@@ -101,20 +101,20 @@ export const ProfileInfoPanel: React.FC<ProfileInfoPanelProps> = ({ profile, onC
                 type="text"
                 value={profile.avatarUrl}
                 onChange={(e) => updateField("avatarUrl", e.target.value)}
-                placeholder="/image.png or https://..."
+                placeholder="Leave empty for Letter Avatar, or paste image URL"
                 className="w-full text-xs bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
               />
               <ImageIcon className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
             </div>
 
-            {/* Quick Reset to original image */}
+            {/* Quick Reset to Letter Avatar */}
             <button
               type="button"
-              onClick={() => updateField("avatarUrl", "/image.png")}
-              className="px-2.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl border border-slate-700 whitespace-nowrap"
-              title="Reset to default photo"
+              onClick={() => updateField("avatarUrl", "")}
+              className="px-3 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-xl border border-slate-700 whitespace-nowrap"
+              title="Reset to dynamic Letter Avatar"
             >
-              Default
+              Letter Avatar
             </button>
           </div>
         </div>

@@ -10,6 +10,7 @@ import {
   duplicateProfile,
 } from "@/lib/storage";
 import { QRCodeModal } from "@/components/editor/QRCodeModal";
+import { LetterAvatar } from "@/components/ui/LetterAvatar";
 import {
   Plus,
   Search,
@@ -229,14 +230,13 @@ export default function DashboardPage() {
                   {/* Top Bar with Avatar & Status */}
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={item.avatarUrl || "/aura-logo.svg"}
-                        alt={item.name}
-                        className="w-12 h-12 rounded-2xl object-cover border border-slate-700 bg-slate-950"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/aura-logo.svg";
-                        }}
+                      <LetterAvatar
+                        name={item.name}
+                        avatarUrl={item.avatarUrl}
+                        className="w-12 h-12 text-sm"
+                        shapeClass="rounded-2xl"
+                        accentColor={item.themeSettings?.accentColor || "#8b5cf6"}
+                        secondaryAccent={item.themeSettings?.secondaryAccent || "#06b6d4"}
                       />
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">

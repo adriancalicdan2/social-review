@@ -26,6 +26,9 @@ export interface ThemeSettings {
   bgPrimary: string;
   bgSecondary: string;
   bgGradientAngle: number;
+  color1?: string;
+  color2?: string;
+  additionalColors?: string[];
   accentColor: string;
   secondaryAccent: string;
   textColor: string;

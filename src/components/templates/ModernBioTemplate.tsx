@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Profile } from "@/lib/types";
 import { IconMapper } from "@/components/ui/IconMapper";
 import { Lightbox } from "@/components/ui/Lightbox";
+import { LetterAvatar } from "@/components/ui/LetterAvatar";
 import { ChevronRight, CheckCircle, ExternalLink } from "lucide-react";
 
 interface TemplateProps {
@@ -15,6 +16,9 @@ export const ModernBioTemplate: React.FC<TemplateProps> = ({ profile, isPreview 
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const { themeSettings, layoutSettings, links } = profile;
   const activeLinks = links.filter((l) => l.isActive);
+
+  const color1 = themeSettings.color1 || themeSettings.accentColor || "#4f46e5";
+  const color2 = themeSettings.color2 || themeSettings.secondaryAccent || "#06b6d4";
 
   const getAvatarRadius = () => {
     if (layoutSettings.avatarShape === "squircle") return "rounded-[28px]";
@@ -41,22 +45,28 @@ export const ModernBioTemplate: React.FC<TemplateProps> = ({ profile, isPreview 
         {/* Profile Card Header */}
         <div className="flex flex-col items-center text-center gap-3">
           <div
-            className="cursor-pointer relative group transition-transform duration-300 hover:scale-105"
-            onClick={() => setLightboxOpen(true)}
+            className={`relative group transition-transform duration-300 ${
+              profile.avatarUrl && profile.avatarUrl !== "/image.png"
+                ? "cursor-pointer hover:scale-105"
+                : ""
+            }`}
+            onClick={() => {
+              if (profile.avatarUrl && profile.avatarUrl !== "/image.png") {
+                setLightboxOpen(true);
+              }
+            }}
           >
             <div
               className={`absolute -inset-1 ${getAvatarRadius()} opacity-50 blur-sm`}
-              style={{ backgroundColor: themeSettings.accentColor }}
+              style={{ backgroundColor: color1 }}
             />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={profile.avatarUrl || "/image.png"}
-              alt={profile.name}
-              className={`relative z-10 w-24 h-24 ${getAvatarRadius()} object-cover border-2 shadow-md`}
-              style={{ borderColor: themeSettings.accentColor }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = "/image.png";
-              }}
+            <LetterAvatar
+              name={profile.name}
+              avatarUrl={profile.avatarUrl}
+              shapeClass={getAvatarRadius()}
+              className="w-24 h-24"
+              accentColor={color1}
+              secondaryAccent={color2}
             />
           </div>
 
@@ -130,12 +140,14 @@ export const ModernBioTemplate: React.FC<TemplateProps> = ({ profile, isPreview 
         </footer>
       )}
 
-      <Lightbox
-        src={profile.avatarUrl || "/image.png"}
-        alt={profile.name}
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-      />
+      {profile.avatarUrl && profile.avatarUrl !== "/image.png" && (
+        <Lightbox
+          src={profile.avatarUrl}
+          alt={profile.name}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 };

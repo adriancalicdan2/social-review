@@ -4,6 +4,7 @@ import React, { useState, useRef } from "react";
 import { Profile, ProfileLink } from "@/lib/types";
 import { IconMapper } from "@/components/ui/IconMapper";
 import { Lightbox } from "@/components/ui/Lightbox";
+import { LetterAvatar } from "@/components/ui/LetterAvatar";
 import { ChevronRight, CheckCircle2 } from "lucide-react";
 
 interface TemplateProps {
@@ -55,6 +56,18 @@ export const CyberGlowTemplate: React.FC<TemplateProps> = ({ profile, isPreview 
     return "rounded-2xl";
   };
 
+  const color1 = themeSettings.color1 || themeSettings.accentColor || "#a37bf7";
+  const color2 = themeSettings.color2 || themeSettings.secondaryAccent || "#1bdfcf";
+  const additional = themeSettings.additionalColors || [];
+
+  // Multi-color gradient string including Color 1, Color 2, and any added colors
+  const brandGradient = [
+    color1,
+    color2,
+    ...additional,
+    color1,
+  ].join(", ");
+
   return (
     <div
       ref={containerRef}
@@ -86,6 +99,17 @@ export const CyberGlowTemplate: React.FC<TemplateProps> = ({ profile, isPreview 
               background: `radial-gradient(circle, ${themeSettings.accentColor}24 0%, transparent 60%)`,
             }}
           />
+          {themeSettings.additionalColors?.map((c, i) => (
+            <div
+              key={i}
+              className="absolute w-[380px] h-[380px] rounded-full"
+              style={{
+                top: `${(i + 1) * 28}%`,
+                left: i % 2 === 0 ? "5%" : "70%",
+                background: `radial-gradient(circle, ${c}25 0%, transparent 60%)`,
+              }}
+            />
+          ))}
         </div>
       )}
 
@@ -104,25 +128,31 @@ export const CyberGlowTemplate: React.FC<TemplateProps> = ({ profile, isPreview 
       <main className="relative z-10 w-full max-w-[460px] px-5 py-10 flex flex-col items-center gap-7 animate-fade-slide-up">
         {/* Profile Header */}
         <header className="flex flex-col items-center text-center gap-3 w-full">
-          {/* Avatar with Glow Ring */}
-          <div className="relative group cursor-pointer" onClick={() => setLightboxOpen(true)}>
+          <div
+            className={`relative group ${
+              profile.avatarUrl && profile.avatarUrl !== "/image.png" ? "cursor-pointer" : ""
+            }`}
+            onClick={() => {
+              if (profile.avatarUrl && profile.avatarUrl !== "/image.png") {
+                setLightboxOpen(true);
+              }
+            }}
+          >
             <div
               className={`absolute -inset-1.5 ${getAvatarRadius()} animate-gradient-shift ${
                 themeSettings.enableGlow ? "animate-ring-pulse opacity-85" : "opacity-40"
               }`}
               style={{
-                background: `linear-gradient(135deg, ${themeSettings.accentColor}, ${themeSettings.secondaryAccent}, ${themeSettings.accentColor})`,
+                background: `linear-gradient(135deg, ${brandGradient})`,
               }}
             />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={profile.avatarUrl || "/aura-logo.svg"}
-              alt={profile.name}
-              className={`relative z-10 w-28 h-28 ${getAvatarRadius()} object-cover border-[3.5px] border-[#0d0b18] shadow-xl transition-transform duration-300 group-hover:scale-105`}
-              onError={(e) => {
-                // Fallback to placeholder if url fails
-                (e.target as HTMLImageElement).src = "/aura-logo.svg";
-              }}
+            <LetterAvatar
+              name={profile.name}
+              avatarUrl={profile.avatarUrl}
+              shapeClass={getAvatarRadius()}
+              className="w-28 h-28"
+              accentColor={color1}
+              secondaryAccent={color2}
             />
           </div>
 
@@ -286,12 +316,14 @@ export const CyberGlowTemplate: React.FC<TemplateProps> = ({ profile, isPreview 
       </main>
 
       {/* Fullscreen Lightbox Modal */}
-      <Lightbox
-        src={profile.avatarUrl || "/aura-logo.svg"}
-        alt={profile.name}
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-      />
+      {profile.avatarUrl && profile.avatarUrl !== "/image.png" && (
+        <Lightbox
+          src={profile.avatarUrl}
+          alt={profile.name}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 };

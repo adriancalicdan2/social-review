@@ -2,8 +2,8 @@
 
 import React from "react";
 import { Profile, ThemeSettings } from "@/lib/types";
-import { BRAND_PALETTES, applyPaletteToTheme, getContrastRatio } from "@/lib/colorUtils";
-import { Palette, Sparkles, Check, Sliders, Eye } from "lucide-react";
+import { getContrastRatio } from "@/lib/colorUtils";
+import { Palette, Plus, Trash2, Eye, Sliders, Sparkles } from "lucide-react";
 
 interface ColorPickerPanelProps {
   profile: Profile;
@@ -12,6 +12,10 @@ interface ColorPickerPanelProps {
 
 export const ColorPickerPanel: React.FC<ColorPickerPanelProps> = ({ profile, onChange }) => {
   const { themeSettings } = profile;
+
+  const color1 = themeSettings.color1 || themeSettings.accentColor || "#a37bf7";
+  const color2 = themeSettings.color2 || themeSettings.secondaryAccent || "#1bdfcf";
+  const additionalColors = themeSettings.additionalColors || [];
 
   const updateTheme = (patch: Partial<ThemeSettings>) => {
     onChange({
@@ -23,131 +27,194 @@ export const ColorPickerPanel: React.FC<ColorPickerPanelProps> = ({ profile, onC
     });
   };
 
-  const handleApplyPalette = (palette: (typeof BRAND_PALETTES)[0]) => {
-    const updated = applyPaletteToTheme(themeSettings, palette);
-    updateTheme(updated);
+  const handleColor1Change = (val: string) => {
+    updateTheme({
+      color1: val,
+      accentColor: val, // Keep in sync
+    });
+  };
+
+  const handleColor2Change = (val: string) => {
+    updateTheme({
+      color2: val,
+      secondaryAccent: val, // Keep in sync
+    });
+  };
+
+  const handleAddColor = () => {
+    const defaultPalette = ["#f59e0b", "#ec4899", "#8b5cf6", "#10b981", "#3b82f6", "#ef4444"];
+    const nextColor = defaultPalette[additionalColors.length % defaultPalette.length];
+    const updated = [...additionalColors, nextColor];
+    updateTheme({
+      additionalColors: updated,
+    });
+  };
+
+  const handleUpdateAdditionalColor = (index: number, val: string) => {
+    const copy = [...additionalColors];
+    copy[index] = val;
+    updateTheme({
+      additionalColors: copy,
+    });
+  };
+
+  const handleRemoveAdditionalColor = (index: number) => {
+    const filtered = additionalColors.filter((_, i) => i !== index);
+    updateTheme({
+      additionalColors: filtered,
+    });
   };
 
   const contrast = getContrastRatio(themeSettings.textColor, themeSettings.bgPrimary);
 
+  // All active brand colors
+  const allBrandColors = [color1, color2, ...additionalColors];
+
   return (
     <div className="flex flex-col gap-6 text-slate-200">
-      {/* Section Header */}
+      {/* Header */}
       <div>
         <h3 className="text-base font-bold text-white flex items-center gap-2">
           <Palette className="w-4 h-4 text-purple-400" />
-          <span>Brand Theme & Color Studio</span>
+          <span>Brand Colors Studio</span>
         </h3>
         <p className="text-xs text-slate-400 mt-1">
-          Customize colors to perfectly match your client or company brand identity.
+          Set your client&apos;s brand colors. Start with Color 1 &amp; Color 2, then add more colors as needed.
         </p>
       </div>
 
-      {/* 1. Quick Industry Brand Palettes */}
-      <div className="flex flex-col gap-2.5">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-          <span>1-Click Brand Combinations</span>
-          <span className="text-[10px] text-purple-400 font-normal">9 Curated Presets</span>
+      {/* 1. Base Colors: Color 1 & Color 2 */}
+      <div className="flex flex-col gap-3">
+        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Core Brand Palette
         </label>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {BRAND_PALETTES.map((p) => {
-            const isSelected = themeSettings.preset === p.id;
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Color 1 */}
+          <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-900 border border-slate-800">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-white">Color 1 (Primary)</span>
+              <span
+                className="w-3.5 h-3.5 rounded-full border border-slate-700 shadow-sm"
+                style={{ backgroundColor: color1 }}
+              />
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <input
+                type="color"
+                value={color1}
+                onChange={(e) => handleColor1Change(e.target.value)}
+                className="w-9 h-9 rounded-xl cursor-pointer bg-transparent border-0 p-0"
+              />
+              <input
+                type="text"
+                value={color1}
+                onChange={(e) => handleColor1Change(e.target.value)}
+                className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
 
-            return (
-              <button
-                key={p.id}
-                type="button"
-                onClick={() => handleApplyPalette(p)}
-                className={`flex items-center justify-between p-2.5 rounded-xl border transition-all text-left group ${
-                  isSelected
-                    ? "border-purple-500 bg-purple-500/10 shadow-md ring-1 ring-purple-500/40"
-                    : "border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900"
-                }`}
-              >
-                <div className="flex flex-col min-w-0 pr-2">
-                  <span className="text-xs font-bold text-slate-200 truncate group-hover:text-white">
-                    {p.name}
-                  </span>
-                  <span className="text-[10px] text-slate-400 truncate">{p.category}</span>
-                </div>
+          {/* Color 2 */}
+          <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-900 border border-slate-800">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-white">Color 2 (Secondary)</span>
+              <span
+                className="w-3.5 h-3.5 rounded-full border border-slate-700 shadow-sm"
+                style={{ backgroundColor: color2 }}
+              />
+            </div>
+            <div className="flex items-center gap-2 mt-1">
+              <input
+                type="color"
+                value={color2}
+                onChange={(e) => handleColor2Change(e.target.value)}
+                className="w-9 h-9 rounded-xl cursor-pointer bg-transparent border-0 p-0"
+              />
+              <input
+                type="text"
+                value={color2}
+                onChange={(e) => handleColor2Change(e.target.value)}
+                className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
+        </div>
 
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  {/* Color Swatch Dots */}
-                  <div className="flex -space-x-1">
-                    <span
-                      className="w-4 h-4 rounded-full border border-slate-900 shadow-sm"
-                      style={{ backgroundColor: p.bgPrimary }}
-                      title="Background"
-                    />
-                    <span
-                      className="w-4 h-4 rounded-full border border-slate-900 shadow-sm"
-                      style={{ backgroundColor: p.accentColor }}
-                      title="Primary Brand Accent"
-                    />
-                    <span
-                      className="w-4 h-4 rounded-full border border-slate-900 shadow-sm"
-                      style={{ backgroundColor: p.secondaryAccent }}
-                      title="Secondary Accent"
-                    />
-                  </div>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-purple-400 ml-1" />}
-                </div>
-              </button>
-            );
-          })}
+        {/* Dynamic Additional Colors (Color 3, Color 4...) */}
+        {additionalColors.map((col, idx) => (
+          <div
+            key={idx}
+            className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-slate-900/90 border border-slate-800 animate-fade-slide-up"
+          >
+            <div className="flex items-center gap-2.5 flex-1">
+              <span className="text-xs font-bold text-slate-300 w-16">
+                Color {idx + 3}
+              </span>
+              <input
+                type="color"
+                value={col}
+                onChange={(e) => handleUpdateAdditionalColor(idx, e.target.value)}
+                className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+              />
+              <input
+                type="text"
+                value={col}
+                onChange={(e) => handleUpdateAdditionalColor(idx, e.target.value)}
+                className="w-32 text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-white focus:outline-none focus:border-purple-500"
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleRemoveAdditionalColor(idx)}
+              className="p-2 text-slate-400 hover:text-red-400 rounded-xl hover:bg-red-500/10 transition-colors"
+              title="Remove Color"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+
+        {/* "+ Add Color" Button */}
+        <button
+          type="button"
+          onClick={handleAddColor}
+          className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border border-dashed border-slate-700 bg-slate-900/40 hover:bg-slate-900 hover:border-purple-500 text-xs font-bold text-slate-300 hover:text-white transition-all active:scale-[0.99] mt-1"
+        >
+          <Plus className="w-4 h-4 text-purple-400" />
+          <span>Add Color (Color {allBrandColors.length + 1})</span>
+        </button>
+
+        {/* Color Palette Preview Ribbon */}
+        <div className="flex items-center gap-2 mt-2 p-2.5 rounded-2xl bg-slate-950 border border-slate-800">
+          <span className="text-[11px] font-semibold text-slate-400">Palette:</span>
+          <div className="flex items-center -space-x-1">
+            {allBrandColors.map((c, i) => (
+              <span
+                key={i}
+                className="w-5 h-5 rounded-full border-2 border-slate-900 shadow-sm"
+                style={{ backgroundColor: c }}
+                title={`Color ${i + 1}: ${c}`}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] text-slate-500 ml-auto font-mono">
+            {allBrandColors.length} colors active
+          </span>
         </div>
       </div>
 
-      {/* 2. Granular Color Pickers */}
+      {/* 2. Background & Text Colors */}
       <div className="flex flex-col gap-3 pt-4 border-t border-slate-800">
-        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-          <span>Fine-Tune Brand Colors</span>
-          <span className="text-[10px] text-slate-400">Hex / Eyedropper</span>
+        <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          Surface &amp; Typography Tones
         </label>
 
         <div className="grid grid-cols-2 gap-3">
-          {/* Primary Accent */}
-          <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-            <span className="text-[11px] font-medium text-slate-300">Primary Brand Color</span>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={themeSettings.accentColor}
-                onChange={(e) => updateTheme({ accentColor: e.target.value })}
-                className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0 p-0"
-              />
-              <input
-                type="text"
-                value={themeSettings.accentColor}
-                onChange={(e) => updateTheme({ accentColor: e.target.value })}
-                className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700/80 rounded-md px-2 py-1 text-slate-200 focus:outline-none focus:border-purple-500"
-              />
-            </div>
-          </div>
-
-          {/* Secondary Accent */}
-          <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-            <span className="text-[11px] font-medium text-slate-300">Secondary Accent</span>
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                value={themeSettings.secondaryAccent}
-                onChange={(e) => updateTheme({ secondaryAccent: e.target.value })}
-                className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0 p-0"
-              />
-              <input
-                type="text"
-                value={themeSettings.secondaryAccent}
-                onChange={(e) => updateTheme({ secondaryAccent: e.target.value })}
-                className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700/80 rounded-md px-2 py-1 text-slate-200 focus:outline-none focus:border-purple-500"
-              />
-            </div>
-          </div>
-
           {/* Background Primary */}
-          <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-            <span className="text-[11px] font-medium text-slate-300">Background Color</span>
+          <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-900 border border-slate-800">
+            <span className="text-[11px] font-medium text-slate-300">Background Tone</span>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -159,14 +226,14 @@ export const ColorPickerPanel: React.FC<ColorPickerPanelProps> = ({ profile, onC
                 type="text"
                 value={themeSettings.bgPrimary}
                 onChange={(e) => updateTheme({ bgPrimary: e.target.value })}
-                className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700/80 rounded-md px-2 py-1 text-slate-200 focus:outline-none focus:border-purple-500"
+                className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-purple-500"
               />
             </div>
           </div>
 
           {/* Text Color */}
-          <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-slate-900/80 border border-slate-800">
-            <span className="text-[11px] font-medium text-slate-300">Heading & Text Color</span>
+          <div className="flex flex-col gap-1.5 p-3 rounded-2xl bg-slate-900 border border-slate-800">
+            <span className="text-[11px] font-medium text-slate-300">Text &amp; Heading Color</span>
             <div className="flex items-center gap-2">
               <input
                 type="color"
@@ -178,14 +245,14 @@ export const ColorPickerPanel: React.FC<ColorPickerPanelProps> = ({ profile, onC
                 type="text"
                 value={themeSettings.textColor}
                 onChange={(e) => updateTheme({ textColor: e.target.value })}
-                className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700/80 rounded-md px-2 py-1 text-slate-200 focus:outline-none focus:border-purple-500"
+                className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-purple-500"
               />
             </div>
           </div>
         </div>
 
-        {/* Contrast Ratio Meter */}
-        <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-xs">
+        {/* Readability Meter */}
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs">
           <div className="flex items-center gap-2 text-slate-400">
             <Eye className="w-4 h-4 text-slate-400" />
             <span>Readability Contrast:</span>
@@ -206,7 +273,7 @@ export const ColorPickerPanel: React.FC<ColorPickerPanelProps> = ({ profile, onC
         </div>
       </div>
 
-      {/* 3. Background Style & Atmosphere */}
+      {/* 3. Background Style */}
       <div className="flex flex-col gap-3 pt-4 border-t border-slate-800">
         <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
           Background Atmosphere
@@ -222,7 +289,7 @@ export const ColorPickerPanel: React.FC<ColorPickerPanelProps> = ({ profile, onC
                 : "border-slate-800 bg-slate-900 text-slate-300 hover:border-slate-700"
             }`}
           >
-            Cyber Glow Mesh
+            Ambient Glow
           </button>
           <button
             type="button"
@@ -253,10 +320,9 @@ export const ColorPickerPanel: React.FC<ColorPickerPanelProps> = ({ profile, onC
       <div className="flex flex-col gap-3 pt-4 border-t border-slate-800">
         <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
           <Sliders className="w-3.5 h-3.5 text-purple-400" />
-          <span>Card & Button Geometry</span>
+          <span>Card &amp; Button Geometry</span>
         </label>
 
-        {/* Button Corner Radius */}
         <div className="flex flex-col gap-1.5">
           <span className="text-[11px] text-slate-400">Button Corner Curvature:</span>
           <div className="grid grid-cols-3 gap-2">

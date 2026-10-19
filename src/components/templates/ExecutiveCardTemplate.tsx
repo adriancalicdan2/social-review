@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Profile } from "@/lib/types";
 import { IconMapper } from "@/components/ui/IconMapper";
 import { Lightbox } from "@/components/ui/Lightbox";
+import { LetterAvatar } from "@/components/ui/LetterAvatar";
 import {
   Phone,
   Mail,
@@ -24,6 +25,9 @@ export const ExecutiveCardTemplate: React.FC<TemplateProps> = ({ profile, isPrev
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const { themeSettings, layoutSettings, contactInfo, links } = profile;
   const activeLinks = links.filter((l) => l.isActive);
+
+  const color1 = themeSettings.color1 || themeSettings.accentColor || "#0ea5e9";
+  const color2 = themeSettings.color2 || themeSettings.secondaryAccent || "#6366f1";
 
   // Download real vCard .vcf file for direct smartphone import
   const downloadVCard = () => {
@@ -79,7 +83,7 @@ END:VCARD`;
           <div
             className="absolute top-0 left-0 right-0 h-1.5"
             style={{
-              background: `linear-gradient(90deg, ${themeSettings.accentColor}, ${themeSettings.secondaryAccent})`,
+              background: `linear-gradient(90deg, ${color1}, ${color2})`,
             }}
           />
 
@@ -87,18 +91,22 @@ END:VCARD`;
           <div className="flex items-start gap-4 pt-2">
             {/* Avatar */}
             <div
-              className="cursor-pointer relative group flex-shrink-0"
-              onClick={() => setLightboxOpen(true)}
+              className={`relative group flex-shrink-0 ${
+                profile.avatarUrl && profile.avatarUrl !== "/image.png" ? "cursor-pointer" : ""
+              }`}
+              onClick={() => {
+                if (profile.avatarUrl && profile.avatarUrl !== "/image.png") {
+                  setLightboxOpen(true);
+                }
+              }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={profile.avatarUrl || "/image.png"}
-                alt={profile.name}
-                className={`w-20 h-20 ${getAvatarRadius()} object-cover border-2 shadow-lg`}
-                style={{ borderColor: themeSettings.accentColor }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/image.png";
-                }}
+              <LetterAvatar
+                name={profile.name}
+                avatarUrl={profile.avatarUrl}
+                shapeClass={getAvatarRadius()}
+                className="w-20 h-20"
+                accentColor={color1}
+                secondaryAccent={color2}
               />
             </div>
 
@@ -301,12 +309,14 @@ END:VCARD`;
         )}
       </main>
 
-      <Lightbox
-        src={profile.avatarUrl || "/image.png"}
-        alt={profile.name}
-        isOpen={lightboxOpen}
-        onClose={() => setLightboxOpen(false)}
-      />
+      {profile.avatarUrl && profile.avatarUrl !== "/image.png" && (
+        <Lightbox
+          src={profile.avatarUrl}
+          alt={profile.name}
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
     </div>
   );
 };

@@ -3,16 +3,17 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { TemplateId, Profile } from "@/lib/types";
-import { BRAND_PALETTES, applyPaletteToTheme } from "@/lib/colorUtils";
 import { saveProfile, isSlugAvailable } from "@/lib/storage";
-import { ArrowLeft, Sparkles, Check, ChevronRight, AlertCircle, Layout } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, ChevronRight, AlertCircle, Palette } from "lucide-react";
 
 export default function NewProfilePage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [templateId, setTemplateId] = useState<TemplateId>("cyber-glow");
-  const [selectedPaletteId, setSelectedPaletteId] = useState("cyber-neon");
+  const [color1, setColor1] = useState("#a37bf7");
+  const [color2, setColor2] = useState("#1bdfcf");
+  const [additionalColors, setAdditionalColors] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,6 +28,22 @@ export default function NewProfilePage() {
           .slice(0, 24)
       );
     }
+  };
+
+  const handleAddColor = () => {
+    const defaultPalette = ["#f59e0b", "#ec4899", "#8b5cf6", "#10b981", "#3b82f6", "#ef4444"];
+    const nextColor = defaultPalette[additionalColors.length % defaultPalette.length];
+    setAdditionalColors([...additionalColors, nextColor]);
+  };
+
+  const handleUpdateAdditionalColor = (index: number, val: string) => {
+    const copy = [...additionalColors];
+    copy[index] = val;
+    setAdditionalColors(copy);
+  };
+
+  const handleRemoveAdditionalColor = (index: number) => {
+    setAdditionalColors(additionalColors.filter((_, i) => i !== index));
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -51,33 +68,35 @@ export default function NewProfilePage() {
       return;
     }
 
-    const palette = BRAND_PALETTES.find((p) => p.id === selectedPaletteId) || BRAND_PALETTES[0];
     const newId = `profile-${Date.now()}`;
 
     const newProfile: Profile = {
       id: newId,
       slug: cleanSlug,
       name: name.trim(),
-      subtitle: "Official Digital Hub",
-      bio: "Welcome to my official digital profile. Tap any link below to connect.",
-      avatarUrl: "/image.png",
+      subtitle: "Official Digital Profile",
+      bio: "Welcome to my official digital hub. Tap any link below to connect.",
+      avatarUrl: "", // Defaults to Letter Avatar
       templateId: templateId,
       status: "draft",
       verified: true,
       themeSettings: {
-        preset: palette.id,
-        themeMode: palette.bgPrimary === "#f8fafc" ? "light" : "dark",
+        preset: "custom",
+        themeMode: "dark",
         bgType: "mesh",
-        bgPrimary: palette.bgPrimary,
-        bgSecondary: palette.bgSecondary,
+        bgPrimary: "#0a0814",
+        bgSecondary: "#131024",
         bgGradientAngle: 135,
-        accentColor: palette.accentColor,
-        secondaryAccent: palette.secondaryAccent,
-        textColor: palette.textColor,
-        textSecondaryColor: palette.bgPrimary === "#f8fafc" ? "#475569" : "#c3c0db",
-        cardBg: palette.cardBg,
+        color1: color1,
+        color2: color2,
+        additionalColors: additionalColors,
+        accentColor: color1,
+        secondaryAccent: color2,
+        textColor: "#f8fafc",
+        textSecondaryColor: "#c3c0db",
+        cardBg: "rgba(255, 255, 255, 0.04)",
         cardOpacity: 10,
-        borderColor: palette.borderColor,
+        borderColor: "rgba(255, 255, 255, 0.09)",
         buttonRadius: "rounded",
         buttonStyle: "glass",
         enableGlow: true,
@@ -146,7 +165,7 @@ export default function NewProfilePage() {
         <div className="mb-6">
           <h1 className="text-2xl font-extrabold text-white">Create New Customer Profile</h1>
           <p className="text-xs text-slate-400 mt-1">
-            Set up the client name, unique NFC URL slug, and starting theme preset.
+            Set up the client name, unique NFC URL slug, starting layout, and brand colors.
           </p>
         </div>
 
@@ -168,7 +187,7 @@ export default function NewProfilePage() {
               required
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g. Acme Studio or Maria Santos"
+              placeholder="e.g. Acme Studio or Juan Dela Cruz"
               className="w-full text-sm bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
             />
           </div>
@@ -226,42 +245,102 @@ export default function NewProfilePage() {
             </div>
           </div>
 
-          {/* Initial Color Palette */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-2">
-              Choose Brand Color Combination:
+          {/* Brand Colors Customizer (Color 1, Color 2, + Add Color) */}
+          <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col gap-3">
+            <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+              <Palette className="w-3.5 h-3.5 text-purple-400" />
+              <span>Theme Brand Colors</span>
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {BRAND_PALETTES.slice(0, 6).map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setSelectedPaletteId(p.id)}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
-                    selectedPaletteId === p.id
-                      ? "border-purple-500 bg-purple-500/10 ring-1 ring-purple-500/40"
-                      : "border-slate-800 bg-slate-950/60 hover:border-slate-700"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-bold text-slate-200 truncate">{p.name}</span>
-                    {selectedPaletteId === p.id && <Check className="w-3 h-3 text-purple-400" />}
-                  </div>
-                  <div className="flex -space-x-1">
-                    <span className="w-3.5 h-3.5 rounded-full border border-slate-900" style={{ backgroundColor: p.bgPrimary }} />
-                    <span className="w-3.5 h-3.5 rounded-full border border-slate-900" style={{ backgroundColor: p.accentColor }} />
-                    <span className="w-3.5 h-3.5 rounded-full border border-slate-900" style={{ backgroundColor: p.secondaryAccent }} />
-                  </div>
-                </button>
-              ))}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Color 1 */}
+              <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <span className="text-[11px] font-bold text-slate-300">Color 1 (Primary)</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <input
+                    type="color"
+                    value={color1}
+                    onChange={(e) => setColor1(e.target.value)}
+                    className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                  />
+                  <input
+                    type="text"
+                    value={color1}
+                    onChange={(e) => setColor1(e.target.value)}
+                    className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
+
+              {/* Color 2 */}
+              <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+                <span className="text-[11px] font-bold text-slate-300">Color 2 (Secondary)</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <input
+                    type="color"
+                    value={color2}
+                    onChange={(e) => setColor2(e.target.value)}
+                    className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                  />
+                  <input
+                    type="text"
+                    value={color2}
+                    onChange={(e) => setColor2(e.target.value)}
+                    className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+              </div>
             </div>
+
+            {/* Additional Colors */}
+            {additionalColors.map((col, idx) => (
+              <div
+                key={idx}
+                className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-900 border border-slate-800"
+              >
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-xs font-bold text-slate-300 w-16">
+                    Color {idx + 3}
+                  </span>
+                  <input
+                    type="color"
+                    value={col}
+                    onChange={(e) => handleUpdateAdditionalColor(idx, e.target.value)}
+                    className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 p-0"
+                  />
+                  <input
+                    type="text"
+                    value={col}
+                    onChange={(e) => handleUpdateAdditionalColor(idx, e.target.value)}
+                    className="w-28 text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveAdditionalColor(idx)}
+                  className="p-1.5 text-slate-400 hover:text-red-400"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+
+            {/* Add Color button */}
+            <button
+              type="button"
+              onClick={handleAddColor}
+              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-dashed border-slate-700 text-xs font-bold text-slate-300 hover:text-white hover:border-purple-500 transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5 text-purple-400" />
+              <span>Add Color (Color {2 + additionalColors.length + 1})</span>
+            </button>
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full mt-3 py-3.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold rounded-2xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            className="w-full mt-2 py-3.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold rounded-2xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
           >
             <span>Launch Visual Editor</span>
             <ChevronRight className="w-4 h-4" />

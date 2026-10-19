@@ -70,14 +70,18 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({ profile, isOpen, onClo
               size={220}
               level="H"
               includeMargin={true}
-              imageSettings={{
-                src: profile.avatarUrl || "/aura-logo.svg",
-                x: undefined,
-                y: undefined,
-                height: 44,
-                width: 44,
-                excavate: true,
-              }}
+              imageSettings={
+                profile.avatarUrl
+                  ? {
+                      src: profile.avatarUrl,
+                      x: undefined,
+                      y: undefined,
+                      height: 44,
+                      width: 44,
+                      excavate: true,
+                    }
+                  : undefined
+              }
             />
           </div>
           <span className="text-[11px] text-slate-500 font-mono mt-2 font-medium">

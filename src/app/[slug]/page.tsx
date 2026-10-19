@@ -13,7 +13,7 @@ import { DEFAULT_PROFILES } from "@/lib/defaultProfiles";
 export default function PublicProfilePage() {
   const params = useParams();
   const slug = (params.slug as string)?.toLowerCase().trim();
-  const targetSlug = slug === "kaia" ? "aura" : slug;
+  const targetSlug = slug;
 
   const initialProfile =
     DEFAULT_PROFILES.find((p) => p.slug.toLowerCase() === targetSlug) || null;

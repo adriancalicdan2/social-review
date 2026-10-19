@@ -1,351 +1,194 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { TemplateId, Profile } from "@/lib/types";
+import { useAuth } from "@/context/AuthContext";
 import { saveProfile, isSlugAvailable } from "@/lib/storage";
-import { ArrowLeft, Plus, Trash2, ChevronRight, AlertCircle, Palette } from "lucide-react";
+import { Profile } from "@/lib/types";
+import { Sparkles, Lock, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export default function NewProfilePage() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [templateId, setTemplateId] = useState<TemplateId>("cyber-glow");
-  const [color1, setColor1] = useState("#a37bf7");
-  const [color2, setColor2] = useState("#1bdfcf");
-  const [additionalColors, setAdditionalColors] = useState<string[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user, loading: authLoading } = useAuth();
+  const [initError, setInitError] = useState<string | null>(null);
 
-  const handleNameChange = (val: string) => {
-    setName(val);
-    if (!slug) {
-      setSlug(
-        val
-          .toLowerCase()
-          .replace(/[^a-z0-9]/g, "-")
-          .replace(/-+/g, "-")
-          .slice(0, 24)
-      );
-    }
-  };
+  useEffect(() => {
+    if (authLoading) return;
 
-  const handleAddColor = () => {
-    const defaultPalette = ["#f59e0b", "#ec4899", "#8b5cf6", "#10b981", "#3b82f6", "#ef4444"];
-    const nextColor = defaultPalette[additionalColors.length % defaultPalette.length];
-    setAdditionalColors([...additionalColors, nextColor]);
-  };
-
-  const handleUpdateAdditionalColor = (index: number, val: string) => {
-    const copy = [...additionalColors];
-    copy[index] = val;
-    setAdditionalColors(copy);
-  };
-
-  const handleRemoveAdditionalColor = (index: number) => {
-    setAdditionalColors(additionalColors.filter((_, i) => i !== index));
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    const cleanSlug = slug.toLowerCase().trim().replace(/[^a-z0-9_-]/g, "");
-    if (!name.trim()) {
-      setError("Please provide a business or customer name.");
-      return;
-    }
-    if (!cleanSlug) {
-      setError("Please enter a valid URL slug.");
+    if (!user) {
+      // Must be logged in to create a profile template
+      router.push("/login?redirect=/editor/new");
       return;
     }
 
-    setIsSubmitting(true);
-    const available = await isSlugAvailable(cleanSlug);
-    if (!available) {
-      setError(`The slug "${cleanSlug}" is already taken or reserved. Please choose another.`);
-      setIsSubmitting(false);
-      return;
+    // Rekta sa buong profile editor:
+    // Generate new draft profile directly and redirect straight to the full two-panel editor
+    async function createAndRedirect() {
+      try {
+        const timestamp = Date.now();
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        let candidateSlug = `brand-${randomNum}`;
+
+        const available = await isSlugAvailable(candidateSlug);
+        if (!available) {
+          candidateSlug = `brand-${timestamp.toString().slice(-5)}`;
+        }
+
+        const newProfile: Profile = {
+          id: `profile-${timestamp}`,
+          slug: candidateSlug,
+          name: "My Digital Profile",
+          subtitle: "Official Smart Pass & Links",
+          bio: "Welcome to my official digital hub. Tap any link below to connect.",
+          avatarUrl: "", // Defaults to Letter Avatar
+          templateId: "cyber-glow",
+          status: "draft",
+          verified: true,
+          themeSettings: {
+            preset: "custom",
+            themeMode: "dark",
+            bgType: "mesh",
+            bgPrimary: "#0a0814",
+            bgSecondary: "#131024",
+            bgGradientAngle: 135,
+            color1: "#a37bf7",
+            color2: "#1bdfcf",
+            additionalColors: [],
+            accentColor: "#a37bf7",
+            secondaryAccent: "#1bdfcf",
+            textColor: "#f8fafc",
+            textSecondaryColor: "#c3c0db",
+            cardBg: "rgba(255, 255, 255, 0.04)",
+            cardOpacity: 10,
+            borderColor: "rgba(255, 255, 255, 0.09)",
+            buttonRadius: "rounded",
+            buttonStyle: "glass",
+            enableGlow: true,
+            enableRipples: true,
+            enableMeshTexture: true,
+            fontFamily: "Space Grotesk",
+          },
+          layoutSettings: {
+            avatarShape: "circle",
+            showSubtitlePill: true,
+            showVerificationBadge: true,
+            showFooterBranding: true,
+            footerText: "Powered by TMaker • NFC Smart Profile",
+            sectionSpacing: "normal",
+          },
+          contactInfo: {
+            email: user?.email || "contact@brand.com",
+            phone: "",
+            location: "Manila, Philippines",
+            website: "https://tmaker.com",
+          },
+          sections: [
+            { id: `sec-${timestamp}-1`, title: "Featured Links", sectionKey: "featured", isVisible: true, sortOrder: 0 },
+            { id: `sec-${timestamp}-2`, title: "Official Socials", sectionKey: "social", isVisible: true, sortOrder: 1 },
+          ],
+          links: [
+            {
+              id: `link-${timestamp}-1`,
+              title: "Official Website",
+              url: "https://tmaker.com",
+              platform: "website",
+              category: "featured",
+              badge: "FEATURED",
+              isActive: true,
+              isHighlighted: true,
+              sortOrder: 0,
+            },
+            {
+              id: `link-${timestamp}-2`,
+              title: "Instagram",
+              url: "https://instagram.com",
+              platform: "instagram",
+              category: "social",
+              badge: null,
+              isActive: true,
+              isHighlighted: false,
+              sortOrder: 1,
+            },
+          ],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        const saved = await saveProfile(newProfile);
+        router.replace(`/editor/${saved.id}`);
+      } catch (err: any) {
+        console.error("Error creating draft profile:", err);
+        setInitError("Failed to initialize profile. Please try again.");
+      }
     }
 
-    const newId = `profile-${Date.now()}`;
+    createAndRedirect();
+  }, [user, authLoading, router]);
 
-    const newProfile: Profile = {
-      id: newId,
-      slug: cleanSlug,
-      name: name.trim(),
-      subtitle: "Official Digital Profile",
-      bio: "Welcome to my official digital hub. Tap any link below to connect.",
-      avatarUrl: "", // Defaults to Letter Avatar
-      templateId: templateId,
-      status: "draft",
-      verified: true,
-      themeSettings: {
-        preset: "custom",
-        themeMode: "dark",
-        bgType: "mesh",
-        bgPrimary: "#0a0814",
-        bgSecondary: "#131024",
-        bgGradientAngle: 135,
-        color1: color1,
-        color2: color2,
-        additionalColors: additionalColors,
-        accentColor: color1,
-        secondaryAccent: color2,
-        textColor: "#f8fafc",
-        textSecondaryColor: "#c3c0db",
-        cardBg: "rgba(255, 255, 255, 0.04)",
-        cardOpacity: 10,
-        borderColor: "rgba(255, 255, 255, 0.09)",
-        buttonRadius: "rounded",
-        buttonStyle: "glass",
-        enableGlow: true,
-        enableRipples: true,
-        enableMeshTexture: true,
-        fontFamily: "Space Grotesk",
-      },
-      layoutSettings: {
-        avatarShape: "circle",
-        showSubtitlePill: true,
-        showVerificationBadge: true,
-        showFooterBranding: true,
-        footerText: "Powered by TMaker • NFC Digital Profile",
-        sectionSpacing: "normal",
-      },
-      contactInfo: {
-        email: "contact@" + cleanSlug + ".com",
-      },
-      sections: [
-        { id: "s-1", title: "Featured Links", sectionKey: "featured", isVisible: true, sortOrder: 0 },
-        { id: "s-2", title: "Socials", sectionKey: "social", isVisible: true, sortOrder: 1 },
-      ],
-      links: [
-        {
-          id: `link-${Date.now()}-1`,
-          title: "Official Website",
-          url: "https://tmaker.com",
-          platform: "website",
-          category: "featured",
-          badge: "FEATURED",
-          isActive: true,
-          isHighlighted: true,
-          sortOrder: 0,
-        },
-        {
-          id: `link-${Date.now()}-2`,
-          title: "Instagram",
-          url: "https://instagram.com",
-          platform: "instagram",
-          category: "social",
-          badge: null,
-          isActive: true,
-          isHighlighted: false,
-          sortOrder: 1,
-        },
-      ],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-mono text-slate-400">
+            CHECKING STUDIO AUTHORIZATION...
+          </span>
+        </div>
+      </div>
+    );
+  }
 
-    const saved = await saveProfile(newProfile);
-    router.push(`/editor/${saved.id}`);
-  };
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl">
+          <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-6 h-6" />
+          </div>
+          <h2 className="text-xl font-bold text-white">Login Required</h2>
+          <p className="text-xs text-slate-400 mt-2">
+            Hindi pwede mag-create ng profile template kung hindi naka-login. Mangyaring mag-sign in o mag-sign up muna.
+          </p>
+          <Link
+            href="/login?redirect=/editor/new"
+            className="mt-6 w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold inline-flex items-center justify-center gap-2 shadow-lg shadow-purple-600/30"
+          >
+            <span>Sign In / Sign Up</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (initError) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-slate-900 border border-red-500/30 rounded-3xl p-6 text-center shadow-2xl">
+          <p className="text-sm text-red-400 mb-4">{initError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 sm:p-8">
-      <div className="w-full max-w-xl bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
-        <button
-          onClick={() => router.push("/dashboard")}
-          className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Dashboard</span>
-        </button>
-
-        <div className="mb-6">
-          <h1 className="text-2xl font-extrabold text-white">Create New Customer Profile</h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Set up the client name, unique NFC URL slug, starting layout, and brand colors.
-          </p>
-        </div>
-
-        {error && (
-          <div className="mb-5 p-3 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-2 text-xs text-red-400">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleCreate} className="flex flex-col gap-5">
-          {/* Client Name */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Customer or Business Name *
-            </label>
-            <input
-              type="text"
-              required
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="e.g. Acme Studio or Juan Dela Cruz"
-              className="w-full text-sm bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
-            />
-          </div>
-
-          {/* Slug */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-1">
-              Unique URL Slug *
-            </label>
-            <div className="flex items-center rounded-xl bg-slate-950 border border-slate-700 overflow-hidden focus-within:border-purple-500">
-              <span className="px-3.5 text-xs text-slate-500 font-mono select-none">
-                tmaker.com/
-              </span>
-              <input
-                type="text"
-                required
-                value={slug}
-                onChange={(e) =>
-                  setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))
-                }
-                placeholder="acme"
-                className="w-full text-sm bg-transparent py-3 pr-3 text-purple-300 font-mono focus:outline-none"
-              />
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1">
-              This slug will be written directly to the customer&apos;s physical NFC card.
-            </p>
-          </div>
-
-          {/* Template Style */}
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 mb-2">
-              Select Starting Template Layout:
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              {[
-                { id: "cyber-glow", name: "Cyber Glow Studio", desc: "Ambient glow & dark aesthetic" },
-                { id: "modern-bio", name: "Modern Bio", desc: "Clean & social-first" },
-                { id: "executive-card", name: "Executive Card", desc: "vCard & corporate layout" },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setTemplateId(t.id as TemplateId)}
-                  className={`p-3 rounded-2xl border text-left transition-all ${
-                    templateId === t.id
-                      ? "border-purple-500 bg-purple-500/10 ring-1 ring-purple-500/40 text-white"
-                      : "border-slate-800 bg-slate-950/60 text-slate-400 hover:border-slate-700"
-                  }`}
-                >
-                  <span className="text-xs font-bold block text-white">{t.name}</span>
-                  <span className="text-[10px] text-slate-400 block mt-0.5">{t.desc}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Brand Colors Customizer (Color 1, Color 2, + Add Color) */}
-          <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 flex flex-col gap-3">
-            <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <Palette className="w-3.5 h-3.5 text-purple-400" />
-              <span>Theme Brand Colors</span>
-            </label>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Color 1 */}
-              <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                <span className="text-[11px] font-bold text-slate-300">Color 1 (Primary)</span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <input
-                    type="color"
-                    value={color1}
-                    onChange={(e) => setColor1(e.target.value)}
-                    className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0 p-0"
-                  />
-                  <input
-                    type="text"
-                    value={color1}
-                    onChange={(e) => setColor1(e.target.value)}
-                    className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-white focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-              </div>
-
-              {/* Color 2 */}
-              <div className="flex flex-col gap-1 p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                <span className="text-[11px] font-bold text-slate-300">Color 2 (Secondary)</span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <input
-                    type="color"
-                    value={color2}
-                    onChange={(e) => setColor2(e.target.value)}
-                    className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0 p-0"
-                  />
-                  <input
-                    type="text"
-                    value={color2}
-                    onChange={(e) => setColor2(e.target.value)}
-                    className="w-full text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1 text-white focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Additional Colors */}
-            {additionalColors.map((col, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-900 border border-slate-800"
-              >
-                <div className="flex items-center gap-2 flex-1">
-                  <span className="text-xs font-bold text-slate-300 w-16">
-                    Color {idx + 3}
-                  </span>
-                  <input
-                    type="color"
-                    value={col}
-                    onChange={(e) => handleUpdateAdditionalColor(idx, e.target.value)}
-                    className="w-7 h-7 rounded-md cursor-pointer bg-transparent border-0 p-0"
-                  />
-                  <input
-                    type="text"
-                    value={col}
-                    onChange={(e) => handleUpdateAdditionalColor(idx, e.target.value)}
-                    className="w-28 text-xs font-mono uppercase bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveAdditionalColor(idx)}
-                  className="p-1.5 text-slate-400 hover:text-red-400"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            ))}
-
-            {/* Add Color button */}
-            <button
-              type="button"
-              onClick={handleAddColor}
-              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-dashed border-slate-700 text-xs font-bold text-slate-300 hover:text-white hover:border-purple-500 transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5 text-purple-400" />
-              <span>Add Color (Color {2 + additionalColors.length + 1})</span>
-            </button>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full mt-2 py-3.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold rounded-2xl shadow-lg shadow-purple-600/30 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-          >
-            <span>Launch Visual Editor</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </form>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="w-10 h-10 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-purple-400" />
+          <span>Opening Full Profile Editor...</span>
+        </h2>
+        <p className="text-xs text-slate-400 max-w-xs">
+          Loading your complete two-panel workspace with live reactive preview &amp; theme controls.
+        </p>
       </div>
     </div>
   );

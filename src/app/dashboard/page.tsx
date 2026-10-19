@@ -29,14 +29,23 @@ import {
   LogOut,
   FolderLock,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { user, loading: authLoading, signOut } = useAuth();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "published" | "draft">("all");
   const [loading, setLoading] = useState(true);
   const [activeQrProfile, setActiveQrProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.push("/login?redirect=/dashboard");
+    }
+  }, [user, authLoading, router]);
 
   const loadProfiles = async () => {
     setLoading(true);
@@ -46,8 +55,10 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    loadProfiles();
-  }, []);
+    if (user) {
+      loadProfiles();
+    }
+  }, [user]);
 
   const handleDuplicate = async (id: string) => {
     const dup = await duplicateProfile(id);
@@ -119,6 +130,25 @@ export default function DashboardPage() {
             <Plus className="w-4 h-4" />
             <span>Create New Profile</span>
           </button>
+
+          {/* User Status & Sign Out */}
+          {user && (
+            <div className="flex items-center gap-2 pl-3 border-l border-slate-800">
+              <span className="hidden md:inline text-xs font-mono text-slate-400">
+                {user.email}
+              </span>
+              <button
+                onClick={async () => {
+                  await signOut();
+                  router.push("/login");
+                }}
+                className="p-2 rounded-xl text-slate-400 hover:text-red-400 hover:bg-slate-800 transition-colors"
+                title="Sign Out of Studio"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </header>
 

@@ -19,7 +19,10 @@ import {
   Share2,
 } from "lucide-react";
 
+import { useAuth } from "@/context/AuthContext";
+
 export default function HomePage() {
+  const { user, signOut } = useAuth();
   const [selectedDemo, setSelectedDemo] = useState<"aura" | "juan" | "acme">("aura");
 
   return (
@@ -54,19 +57,45 @@ export default function HomePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="text-xs font-bold text-slate-300 hover:text-white px-3 py-2 rounded-xl transition-colors hidden sm:block"
-          >
-            Admin Dashboard
-          </Link>
-          <Link
-            href="/editor/new"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 flex items-center gap-1.5 transition-all active:scale-95"
-          >
-            <span>Create Profile</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+          {user ? (
+            <>
+              <Link
+                href="/dashboard"
+                className="text-xs font-bold text-slate-300 hover:text-white px-3 py-2 rounded-xl transition-colors hidden sm:block"
+              >
+                Dashboard
+              </Link>
+              <Link
+                href="/editor/new"
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <span>Create Profile</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+              <button
+                onClick={() => signOut()}
+                className="text-xs text-slate-400 hover:text-red-400 px-2 py-1 rounded-lg hover:bg-slate-900 transition-colors hidden sm:block"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-xs font-bold text-slate-300 hover:text-white px-3 py-2 rounded-xl transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/login?redirect=/editor/new"
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <span>Create Profile</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -96,7 +125,7 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mt-8 w-full sm:w-auto">
             <Link
-              href="/editor/new"
+              href={user ? "/editor/new" : "/login?redirect=/editor/new"}
               className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-sm font-bold shadow-xl shadow-purple-600/30 flex items-center justify-center gap-2 transition-all active:scale-95"
             >
               <span>Create a Digital Profile</span>

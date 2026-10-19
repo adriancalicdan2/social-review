@@ -25,7 +25,9 @@ import {
   Sliders,
   Check,
   AlertCircle,
+  LogOut,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function EditorPage() {
   const params = useParams();
@@ -40,7 +42,17 @@ export default function EditorPage() {
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [slugError, setSlugError] = useState<string | null>(null);
 
+  const { user, loading: authLoading, signOut } = useAuth();
+
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      router.push(`/login?redirect=/editor/${profileId}`);
+    }
+  }, [user, authLoading, profileId, router]);
+
+  useEffect(() => {
+    if (authLoading || !user) return;
     async function load() {
       const data = await getProfileById(profileId);
       if (data) {
@@ -50,9 +62,9 @@ export default function EditorPage() {
       }
     }
     load();
-  }, [profileId, router]);
+  }, [profileId, user, authLoading, router]);
 
-  if (!profile) {
+  if (authLoading || !profile) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
         <div className="flex items-center gap-2">
@@ -216,6 +228,25 @@ export default function EditorPage() {
             )}
             <span>{saveSuccess ? "Saved!" : "Publish"}</span>
           </button>
+
+          {/* User Profile & Sign Out */}
+          {user && (
+            <div className="flex items-center gap-1.5 pl-2 border-l border-slate-800">
+              <span className="hidden xl:inline text-[11px] text-slate-400 font-mono truncate max-w-[130px]" title={user.email || ""}>
+                {user.email}
+              </span>
+              <button
+                onClick={async () => {
+                  await signOut();
+                  router.push("/login");
+                }}
+                className="p-1.5 text-slate-400 hover:text-red-400 rounded-xl hover:bg-slate-800 transition-colors"
+                title="Sign Out of Studio"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </header>
 

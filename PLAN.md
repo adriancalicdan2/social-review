@@ -5,37 +5,30 @@
 
 ## 1. Executive Summary & Project Overview
 
-**TMaker** is a production-grade Software-as-a-Service (SaaS) platform tailored for an NFC digital business card & smart profile business. As the administrator and service provider, you can create, customize, preview, manage, and publish high-performance, mobile-first digital profile pages for clients across various verticals (creators, musicians, enterprises, executives, and influencers).
+**TMaker** is a production-grade Software-as-a-Service (SaaS) platform tailored for an NFC digital business card & smart profile business. As the administrator and service provider, you can create, customize, preview, manage, and publish high-performance, mobile-first digital profile pages for clients across various verticals (creators, musicians, enterprises, executives, and brands).
 
 Each customer profile is linked to a clean, unique URL (e.g. `tmaker.com/companyname`, `tmaker.com/juan`, `tmaker.com/aura`), which is programmed onto physical NFC cards or smart tags. Tapping the NFC card with any smartphone immediately opens the customer's digital hub.
 
----
-
-## 2. Analysis of the Original Template (KAIA Profile)
-
-The provided starting files (`index.html`, `style.css`, `script.js`, `image.png`) feature:
-
-1. **Aesthetic & Theme Elements**:
-   - Signature P-pop cyber-glam dark aesthetic with deep violet/black background (`#0a0814` and `#131024`).
-   - Dynamic radial ambient glow filters (`#a37bf7` purple and `#1bdfcf` turquoise) with fixed mesh grid styling.
-   - Animated ring pulse and gradient shifts around the profile avatar.
-   - Glassmorphism link cards with `rgba(255, 255, 255, 0.04)` fill and subtle border glow on hover.
-   - Full-color custom SVG brand icons for Spotify, YouTube, Apple Music, Instagram, TikTok, X, Facebook, and contact channels.
-   - Featured badges (`★ LATEST MUSIC`) with high-contrast gradient buttons.
-2. **Interactive Logic in `script.js`**:
-   - Dynamic client configuration object (`CONFIG`) housing business name, subtitle, bio, logo URL, and link items.
-   - Categorized link groups (Music & Releases, Official Socials, Connect & Fan Hub).
-   - Click ripple animation on cards.
-   - Deep-linking intents for native Android applications (e.g. `intent://` for Spotify and Instagram) with fallback handling.
-   - Canvas-based fallback avatar generation with client initials.
-   - Fullscreen lightbox viewer for avatar imagery.
-3. **Refactoring Strategy**:
-   - The original KAIA design is preserved with 100% visual fidelity as the initial **Cyber Glow / KAIA Style** template preset.
-   - The hardcoded `CONFIG` object is abstracted into an extensible schema and database model that powers the dynamic renderer and live editor.
+### Core System Requirements
+1. **Firebase Authentication (Sign In & Sign Up)**:
+   - Mandatory authentication guard: Users cannot create or edit profile templates without logging in.
+   - Dual-mode auth: Email/Password (Sign In & Sign Up) with persistent session tracking.
+   - Unauthenticated attempts to access `/editor/*` or create a new profile are automatically intercepted and redirected to `/login`.
+2. **Direct-To-Full-Editor Creation ("Rekta sa Buong Profile Editor")**:
+   - Creating a new profile bypasses any restrictive mini-wizards.
+   - Immediately initializes a full draft and loads the complete two-panel reactive editor with all capabilities active:
+     - Profile Info & Contacts
+     - Links & Categorized Socials
+     - Theme Studio: Color 1 (Primary), Color 2 (Secondary), and dynamic "+ Add Color" list
+     - Layout & Template Switcher
+     - Live interactive phone preview frame & QR generator.
+3. **Dedicated Branding & Letter Avatars**:
+   - Clean Letter Avatar (initials on brand gradient) as default whenever no custom logo/photo is uploaded.
+   - Official vector logos for showcase profiles (Aura and Acme).
 
 ---
 
-## 3. System Architecture & Tech Stack
+## 2. System Architecture & Tech Stack
 
 ```
                               ┌──────────────────────────────────────────────┐
@@ -46,17 +39,18 @@ The provided starting files (`index.html`, `style.css`, `script.js`, `image.png`
          ┌───────────────────────────┬───────────────┴───────────────┬───────────────────────────┐
          ▼                           ▼                               ▼                           ▼
  ┌───────────────┐           ┌───────────────┐               ┌───────────────┐           ┌───────────────┐
- │   Homepage    │           │ Admin / Auth  │               │   Dashboard   │           │ Dynamic Slug  │
+ │   Homepage    │           │ Login/SignUp  │               │   Dashboard   │           │ Dynamic Slug  │
  │     `/`       │           │   `/login`    │               │  & 2-Panel    │           │   `/:slug`    │
- │ Premium SaaS  │           │ Next-Auth /   │               │   Editor      │           │ Public Mobile │
- │ Landing & CTA │           │ Supabase Auth │               │  Live Preview │           │ NFC Renderer  │
+ │ Premium SaaS  │           │ Firebase Auth │               │   Editor      │           │ Public Mobile │
+ │ Landing & CTA │           │ Email/Password│               │  Live Preview │           │ NFC Renderer  │
  └───────────────┘           └───────────────┘               └───────┬───────┘           └───────┬───────┘
                                                                      │                           │
                                      ┌───────────────────────────────┴───────────────────────────┘
                                      ▼
                       ┌─────────────────────────────┐
                       │    Storage & Data Layer     │
-                      │  • Supabase (PostgreSQL)    │
+                      │  • Firebase Firestore       │
+                      │  • Local Storage (Cache v5) │
                       │  • Local Storage Dev-Mode   │
                       │    Fallback Engine          │
                       └─────────────────────────────┘

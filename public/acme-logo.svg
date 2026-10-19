@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="acmeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e1b4b" />
+    </linearGradient>
+
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+
+    <linearGradient id="accentGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#818cf8" />
+    </linearGradient>
+
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#4f46e5" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="128" fill="url(#acmeBg)" />
+
+  <!-- Outer Subtle Tech Circle -->
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="12 8" opacity="0.6" />
+
+  <!-- Overlapping Geometric Studio "A" Icon -->
+  <g filter="url(#softShadow)">
+    <!-- Left Isometric Apex Leg -->
+    <path
+      d="M 256 120 L 140 360 L 205 360 L 256 240 L 307 360 L 372 360 Z"
+      fill="url(#primaryGrad)"
+    />
+
+    <!-- Interlocking Center Facet -->
+    <polygon
+      points="256,170 300,270 212,270"
+      fill="#0f172a"
+      opacity="0.95"
+    />
+
+    <!-- Cyan High-Tech Core Diamond -->
+    <polygon
+      points="256,210 278,250 256,290 234,250"
+      fill="url(#accentGrad)"
+    />
+
+    <!-- Horizontal Connecting Bridge Beam -->
+    <rect
+      x="175"
+      y="300"
+      width="162"
+      height="26"
+      rx="13"
+      fill="url(#accentGrad)"
+      opacity="0.9"
+    />
+  </g>
+
+  <!-- Accent Nodes -->
+  <circle cx="256" cy="120" r="9" fill="#38bdf8" />
+  <circle cx="140" cy="360" r="8" fill="#818cf8" />
+  <circle cx="372" cy="360" r="8" fill="#06b6d4" />
+</svg>

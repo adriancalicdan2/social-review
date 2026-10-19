@@ -12,7 +12,7 @@ import {
   where,
 } from "firebase/firestore";
 
-const STORAGE_KEY = "tmaker_profiles_v4";
+const STORAGE_KEY = "tmaker_profiles_v5";
 
 // Reserved URLs that can never be claimed as a profile slug
 export const RESERVED_SLUGS = [
@@ -41,10 +41,11 @@ function getLocalProfiles(): Profile[] {
     return inMemoryProfiles;
   }
   try {
-    // Purge older caches to ensure updated letter avatars and configurations
+    // Purge older caches to ensure updated logos and configurations
     localStorage.removeItem("tmaker_profiles_v1");
     localStorage.removeItem("tmaker_profiles_v2");
     localStorage.removeItem("tmaker_profiles_v3");
+    localStorage.removeItem("tmaker_profiles_v4");
 
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) {
@@ -53,9 +54,15 @@ function getLocalProfiles(): Profile[] {
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Ensure letter avatars are defaulted
+      // Ensure official logos for Aura and Acme are applied
       const updated = parsed.map((p) => {
-        if (p.avatarUrl === "/image.png" || p.avatarUrl === "/aura-logo.svg") {
+        if (p.slug === "aura" && (!p.avatarUrl || p.avatarUrl === "/image.png")) {
+          return { ...p, avatarUrl: "/aura-logo.svg" };
+        }
+        if (p.slug === "acme" && (!p.avatarUrl || p.avatarUrl === "/image.png")) {
+          return { ...p, avatarUrl: "/acme-logo.svg" };
+        }
+        if (p.avatarUrl === "/image.png") {
           return { ...p, avatarUrl: "" };
         }
         return p;
